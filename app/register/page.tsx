@@ -1,9 +1,8 @@
 "use client";
 // 👆 Este componente se ejecuta del lado del cliente (navegador)
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-// 👆 Importamos React y el cliente de Supabase que configuramos en
-/lib
+import { supabase } from "@/lib/supabaseCliente";
+// 👆 Importamos React y el cliente de Supabase que configuramos en lib
 export default function RegisterPage() {
 // 📦 Estados tipados con TypeScript
 const [nombre, setNombre] = useState<string>("");
@@ -14,10 +13,8 @@ const [message, setMessage] = useState<string | null>(null);
 // ⚙️ Esta función maneja el registro del usuario
 const handleRegister = async (e: React.FormEvent<HTMLFormElement>) =>
 {
-e.preventDefault(); // 👈 Evita que el formulario recargue la
-página
-// 🚀 1️⃣Registrar al usuario en el sistema de autenticación de
-Supabase
+e.preventDefault(); // 👈 Evita que el formulario recargue la página
+// 🚀 1️⃣Registrar al usuario en el sistema de autenticación de Supabase
 const { data: authData, error: authError } = await
 supabase.auth.signUp({
 email,
@@ -40,8 +37,7 @@ const { error: insertError } = await supabase
 .from("estudiantes")
 .insert([
 {
-id: userId, // 🧩 Usamos el mismo ID del sistema de
-autenticación
+id: userId, // 🧩 Usamos el mismo ID del sistema de autenticación
 nombre,
 correo: email,
 telefono,
@@ -49,13 +45,11 @@ telefono,
 ]);
 // 🧩 Si hay error al insertar en la tabla
 if (insertError) {
-setMessage("⚠️ Usuario autenticado pero no guardado en la tabla:
-" + insertError.message);
+setMessage("⚠️ Usuario autenticado pero no guardado en la tabla: " + insertError.message);
 return;
 }
 // ✅ Si todo sale bien:
-setMessage("✅ Usuario registrado y guardado correctamente. Revisa
-tu correo para confirmar.");
+setMessage("✅ Usuario registrado y guardado correctamente. Revisa tu correo para confirmar.");
 };
 return (
 <div className="max-w-sm mx-auto mt-10 p-6 border rounded-lg
@@ -70,8 +64,7 @@ type="text"
 placeholder="Nombre completo"
 value={nombre}
 
-onChange={(e) => setNombre(e.target.value)} // 🔄 Actualiza
-el estado
+onChange={(e) => setNombre(e.target.value)} // 🔄 Actualiza el estado
 required
 className="border p-2 rounded"
 />
@@ -80,8 +73,7 @@ className="border p-2 rounded"
 type="email"
 placeholder="Correo electrónico"
 value={email}
-onChange={(e) => setEmail(e.target.value)} // 🔄 Actualiza el
-estado
+onChange={(e) => setEmail(e.target.value)} // 🔄 Actualiza el estado
 required
 className="border p-2 rounded"
 />
@@ -90,8 +82,7 @@ className="border p-2 rounded"
 type="tel"
 placeholder="Teléfono"
 value={telefono}
-onChange={(e) => setTelefono(e.target.value)} // 🔄 Actualiza
-el estado
+onChange={(e) => setTelefono(e.target.value)} // 🔄 Actualiza el estado
 className="border p-2 rounded"
 />
 {/* Campo para la contraseña */}
@@ -99,8 +90,7 @@ className="border p-2 rounded"
 type="password"
 placeholder="Contraseña"
 value={password}
-onChange={(e) => setPassword(e.target.value)} // 🔄 Actualiza
-el estado
+onChange={(e) => setPassword(e.target.value)} // 🔄 Actualiza el estado
 required
 className="border p-2 rounded"
 />

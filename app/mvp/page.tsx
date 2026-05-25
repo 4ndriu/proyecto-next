@@ -1,8 +1,7 @@
 "use client";
-// 👆 Este archivo se ejecuta en el cliente (navegador), no en el
-servidor.
+// 👆 Este archivo se ejecuta en el cliente (navegador), no en el servidor.
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseCliente";
 // 🧩 Definimos la estructura (tipo) de una actividad
 interface Actividad {
 id: string;
@@ -62,11 +61,10 @@ const { data, error } = await supabase
 .from("actividades")
 .select("id, titulo, descripcion, tipo, imagen, curso_id")
 
-.eq("estudiante_id", user.id) // 🔍 Filtra solo las
-actividades del usuario actual
+.eq("estudiante_id", user.id) // 🔍 Filtra solo las actividades del usuario actual
 .order("id", { ascending: false });
 if (error) {
-console.error("❌ Error al cargar actividades:",
+console.error("❌ Error al cargar actividades:", 
 error.message);
 } else {
 setActividades(data || []);
@@ -83,8 +81,7 @@ const {
 data: { user },
 } = await supabase.auth.getUser();
 if (!user) {
-setMensaje("⚠️ Debes iniciar sesión para subir
-actividades");
+setMensaje("⚠️ Debes iniciar sesión para subir actividades");
 return;
 }
 // 📤 Insertamos la nueva actividad en la base de datos
@@ -95,8 +92,7 @@ descripcion,
 tipo,
 imagen,
 curso_id: cursoSeleccionado,
-estudiante_id: user.id, // 👈 Asociamos la actividad al
-usuario logueado
+estudiante_id: user.id, // 👈 Asociamos la actividad al usuario logueado
 },
 ]);
 

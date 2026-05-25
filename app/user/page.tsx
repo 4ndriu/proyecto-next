@@ -2,7 +2,7 @@
 
 // 👆 Este componente se ejecuta en el navegador (cliente)
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseCliente";
 // 🧩 Definimos el tipo (estructura) del estudiante
 interface Estudiante {
 id: string;
@@ -31,8 +31,7 @@ return;
 const { data, error } = await supabase
 .from("estudiantes")
 .select("id, nombre, correo, telefono")
-.eq("id", user.id) // 👈 El id de autenticación es igual al de la
-tabla
+.eq("id", user.id) // 👈 El id de autenticación es igual al de la tabla
 .single();
 if (error) {
 console.error("❌ Error al cargar estudiante:", error.message);

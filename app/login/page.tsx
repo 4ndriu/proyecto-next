@@ -1,17 +1,15 @@
 "use client";
 // 👆 Este componente se ejecuta del lado del cliente (navegador)
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-// 👆 Importamos React y el cliente de Supabase que configuramos en
-/lib
+import { supabase } from "@/lib/supabaseCliente";
+// 👆 Importamos React y el cliente de Supabase que configuramos en /lib
 export default function LoginPage() {
 // 📦 Estados tipados con TypeScript
 const [email, setEmail] = useState<string>("");
 
 const [password, setPassword] = useState<string>("");
 const [message, setMessage] = useState<string | null>(null);
-// ⚙️ Esta función se ejecuta cuando el usuario envía el formulario de
-login
+// ⚙️ Esta función se ejecuta cuando el usuario envía el formulario de login
 const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 e.preventDefault(); // 👈 Evita que el formulario recargue la página
 // 🚀 1️⃣Autenticar usuario con Supabase (email y contraseña)
@@ -45,8 +43,7 @@ type="email"
 placeholder="Correo electrónico"
 value={email}
 
-onChange={(e) => setEmail(e.target.value)} // 🔄 Actualiza el
-estado
+onChange={(e) => setEmail(e.target.value)} // 🔄 Actualiza el estado
 required
 className="border p-2 rounded"
 />
@@ -55,8 +52,7 @@ className="border p-2 rounded"
 type="password"
 placeholder="Contraseña"
 value={password}
-onChange={(e) => setPassword(e.target.value)} // 🔄 Actualiza
-el estado
+onChange={(e) => setPassword(e.target.value)} // 🔄 Actualiza el estado
 required
 className="border p-2 rounded"
 />

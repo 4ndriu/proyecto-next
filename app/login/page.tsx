@@ -1,68 +1,155 @@
 "use client";
-// 👆 Este componente se ejecuta del lado del cliente (navegador)
+
 import { useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseCliente";
-// 👆 Importamos React y el cliente de Supabase que configuramos en /lib
+
 export default function LoginPage() {
-// 📦 Estados tipados con TypeScript
-const [email, setEmail] = useState<string>("");
 
-const [password, setPassword] = useState<string>("");
-const [message, setMessage] = useState<string | null>(null);
-// ⚙️ Esta función se ejecuta cuando el usuario envía el formulario de login
-const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-e.preventDefault(); // 👈 Evita que el formulario recargue la página
-// 🚀 1️⃣Autenticar usuario con Supabase (email y contraseña)
-const { data, error } = await supabase.auth.signInWithPassword({
-email,
-password,
-});
-// 🧩 Si hay error en la autenticación, mostramos el mensaje
-if (error) {
-setMessage("❌ Error al iniciar sesión: " + error.message);
-return;
-}
-// ✅ Si el login es exitoso, guardamos el usuario en sesión
-if (data.user) { //data.user es parte de supabase
-setMessage("✅ Bienvenido, sesión iniciada correctamente.");
-} else {
-setMessage("⚠️ No se encontró el usuario. Intenta de nuevo.");
-}
-};
+  // ESTADOS
+  const [email, setEmail] =
+    useState<string>("");
 
-return (
-<div className="max-w-sm mx-auto mt-10 p-6 border rounded-lg
-shadow">
-<h1 className="text-xl font-bold mb-4 text-center">Inicio de
-sesión</h1>
-{/* 📋 Al enviar el formulario se ejecuta handleLogin */}
-<form onSubmit={handleLogin} className="flex flex-col gap-4">
-{/* Campo para el correo */}
-<input
-type="email"
-placeholder="Correo electrónico"
-value={email}
+  const [password, setPassword] =
+    useState<string>("");
 
-onChange={(e) => setEmail(e.target.value)} // 🔄 Actualiza el estado
-required
-className="border p-2 rounded"
-/>
-{/* Campo para la contraseña */}
-<input
-type="password"
-placeholder="Contraseña"
-value={password}
-onChange={(e) => setPassword(e.target.value)} // 🔄 Actualiza el estado
-required
-className="border p-2 rounded"
-/>
-<button type="submit" className="bg-green-600 text-white p-2
-rounded">
-Iniciar sesión
-</button>
-</form>
-{/* 💬 Mostramos mensajes de éxito o error */}
-{message && <p className="mt-4 text-center">{message}</p>}
-</div>
-);
+  const [message, setMessage] =
+    useState<string | null>(null);
+
+  const [loading, setLoading] =
+    useState<boolean>(false);
+
+  // LOGIN
+  const handleLogin = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+
+    e.preventDefault();
+
+    setLoading(true);
+    setMessage(null);
+
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    // ERROR
+    if (error) {
+      setMessage(
+        "❌ Error al iniciar sesión: " +
+          error.message
+      );
+      setLoading(false);
+      return;
+    }
+
+    // LOGIN OK
+    if (data.user) {
+
+      setMessage(
+        "✅ Bienvenido, sesión iniciada correctamente."
+      );
+
+      setTimeout(() => {
+        window.location.href = "/user";
+      }, 1500);
+
+    } else {
+
+      setMessage(
+        "⚠️ No se encontró el usuario."
+      );
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4">
+
+      {/* CARD */}
+      <div className="w-full max-w-md bg-white rounded-[32px] shadow-2xl p-10">
+
+        {/* LOGO */}
+        <div className="flex justify-center mb-5">
+          <div className="bg-[#E60023] w-16 h-16 rounded-full flex items-center justify-center shadow-md">
+            <span className="text-white text-3xl font-bold">
+              P
+            </span>
+          </div>
+        </div>
+
+        {/* TITULO */}
+        <h1 className="text-4xl font-bold text-center text-black mb-8">
+          Bienvenido a Pinterest
+        </h1>
+
+        {/* FORM */}
+        <form
+          onSubmit={handleLogin}
+          className="flex flex-col gap-4"
+        >
+
+          {/* EMAIL */}
+          <input
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
+            required
+            className="border border-gray-300 rounded-2xl px-5 py-4 text-black placeholder:text-gray-500 outline-none focus:border-gray-500 bg-white"
+          />
+
+          {/* PASSWORD */}
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            required
+            className="border border-gray-300 rounded-2xl px-5 py-4 text-black placeholder:text-gray-500 outline-none focus:border-gray-500 bg-white"
+          />
+
+          {/* BOTON */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-[#E60023] hover:bg-red-700 text-white py-4 rounded-full font-bold transition"
+          >
+            {loading
+              ? "Cargando..."
+              : "Iniciar sesión"}
+          </button>
+
+        </form>
+
+        {/* MENSAJE */}
+        {message && (
+          <p className="mt-5 text-center text-sm text-black">
+            {message}
+          </p>
+        )}
+
+        {/* REGISTER */}
+        <p className="text-center text-gray-600 mt-6 text-sm">
+          ¿No tienes cuenta?{" "}
+          <Link
+            href="/register"
+            className="font-bold text-black hover:underline"
+          >
+            Regístrate
+          </Link>
+        </p>
+
+      </div>
+    </div>
+  );
 }

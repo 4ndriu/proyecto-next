@@ -1,226 +1,157 @@
 "use client";
-// 👆 Este archivo se ejecuta en el cliente (navegador), no en el servidor.
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseCliente";
-// 🧩 Definimos la estructura (tipo) de una actividad
-interface Actividad {
-id: string;
-titulo: string;
-descripcion: string;
-tipo: string;
-imagen: string;
-curso_id: string;
-}
-// 🧩 Definimos la estructura (tipo) de un curso
-interface Curso {
-id: string;
-nombre: string;
-}
-export default function MVPPage() {
-// -------------------------------
-// 🧠 ESTADOS (tipados con TypeScript)
-// -------------------------------
-const [titulo, setTitulo] = useState<string>("");
-const [descripcion, setDescripcion] = useState<string>("");
 
-const [imagen, setImagen] = useState<string>("");
-const [tipo, setTipo] = useState<string>("tarea");
-const [cursoSeleccionado, setCursoSeleccionado] =
-useState<string>("");
-const [cursos, setCursos] = useState<Curso[]>([]);
-const [actividades, setActividades] = useState<Actividad[]>([]);
-const [mensaje, setMensaje] = useState<string | null>(null);
-const [loading, setLoading] = useState<boolean>(true);
-// -----------------------------------------
-// 🚀 FUNCIÓN 1: Cargar cursos desde Supabase
-// -----------------------------------------
-const fetchCursos = async () => {
-const { data, error } = await supabase
-.from("cursos")
-.select("id, nombre")
-.order("nombre", { ascending: true });
-if (error) {
-console.error("❌ Error al cargar cursos:", error.message);
-} else {
-setCursos(data || []);
-}
-};
-// -------------------------------------------------
-// 🚀 FUNCIÓN 2: Cargar actividades del estudiante actual
-// -------------------------------------------------
-const fetchActividades = async () => {
-const {
-data: { user },
-} = await supabase.auth.getUser();
-if (!user) {
-setMensaje("⚠️ No hay usuario logueado");
-setLoading(false);
-return;
-}
-const { data, error } = await supabase
-.from("actividades")
-.select("id, titulo, descripcion, tipo, imagen, curso_id")
+export default function LoginPage() {
 
-.eq("estudiante_id", user.id) // 🔍 Filtra solo las actividades del usuario actual
-.order("id", { ascending: false });
-if (error) {
-console.error("❌ Error al cargar actividades:", 
-error.message);
-} else {
-setActividades(data || []);
-}
-setLoading(false);
-};
-// -------------------------------------------------
-// 🚀 FUNCIÓN 3: Subir nueva actividad
-// -------------------------------------------------
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
-{
-e.preventDefault();
-const {
-data: { user },
-} = await supabase.auth.getUser();
-if (!user) {
-setMensaje("⚠️ Debes iniciar sesión para subir actividades");
-return;
-}
-// 📤 Insertamos la nueva actividad en la base de datos
-const { error } = await supabase.from("actividades").insert([
-{
-titulo,
-descripcion,
-tipo,
-imagen,
-curso_id: cursoSeleccionado,
-estudiante_id: user.id, // 👈 Asociamos la actividad al usuario logueado
-},
-]);
+  // ESTADOS
+  const [email, setEmail] =
+    useState<string>("");
 
-if (error) {
-setMensaje("❌ Error al subir actividad: " + error.message);
-} else {
-setMensaje("✅ Actividad subida correctamente");
-setTitulo("");
-setDescripcion("");
-setImagen("");
-setCursoSeleccionado("");
-fetchActividades(); // 🔄 Actualizamos la lista
-}
-};
-// -------------------------------------------------
-// 🌀 useEffect: Cargar cursos y actividades al iniciar
-// -------------------------------------------------
-useEffect(() => {
-fetchCursos();
-fetchActividades();
-}, []);
-if (loading) return <p className="text-center">⏳ Cargando...</p>;
-// -------------------------------------------------
-// 🎨 INTERFAZ VISUAL (FORMULARIO + LISTADO)
-// -------------------------------------------------
-return (
-<div className="max-w-lg mx-auto mt-10 p-6 border rounded-lg
-shadow">
-<h1 className="text-2xl font-bold text-center mb-6">
-Subir Actividad (MVP)
-</h1>
-{/* 📋 FORMULARIO PARA SUBIR ACTIVIDAD */}
-<form onSubmit={handleSubmit} className="flex flex-col gap-3
-mb-8">
-<input
-type="text"
-placeholder="Título"
-value={titulo}
-onChange={(e) => setTitulo(e.target.value)}
-required
-className="border p-2 rounded"
+  const [password, setPassword] =
+    useState<string>("");
 
-/>
-<textarea
-placeholder="Descripción"
-value={descripcion}
-onChange={(e) => setDescripcion(e.target.value)}
-className="border p-2 rounded"
-/>
-<select
-value={tipo}
-onChange={(e) => setTipo(e.target.value)}
-className="border p-2 rounded"
->
-<option value="tarea">Tarea</option>
-<option value="examen">Examen</option>
-<option value="proyecto">Proyecto</option>
-<option value="participacion">Participación</option>
-<option value="otro">Otro</option>
-</select>
-{/* Selección del curso */}
-<select
-value={cursoSeleccionado}
-onChange={(e) =>
-setCursoSeleccionado(e.target.value)}
-required
-className="border p-2 rounded"
->
-<option value="">Selecciona un curso</option>
-{cursos.map((curso) => (
-<option key={curso.id} value={curso.id}>
-{curso.nombre}
-</option>
-))}
-</select>
-{/* Campo de URL de imagen */}
-<input
-type="text"
-placeholder="URL de imagen"
-value={imagen}
-onChange={(e) => setImagen(e.target.value)}
+  const [message, setMessage] =
+    useState<string | null>(null);
 
-className="border p-2 rounded"
-/>
-<button
-type="submit"
-className="bg-blue-600 text-white py-2 rounded
-hover:bg-blue-700"
->
-Subir Actividad
-</button>
-</form>
-{/* Mensaje de éxito o error */}
-{mensaje && <p className="text-center mb-4">{mensaje}</p>}
-{/* 🧾 LISTADO DE ACTIVIDADES DEL ESTUDIANTE */}
-<h2 className="text-xl font-semibold mb-3 text-center">
-Mis Actividades
-</h2>
-{actividades.length === 0 ? (
-<p className="text-center text-gray-600">
-No has subido actividades aún.
-</p>
-) : (
-<div className="space-y-4">
-{actividades.map((act) => (
-<div key={act.id} className="border p-4 rounded
-shadow-sm">
-<h3
-className="font-semibold">{act.titulo}</h3>
-<p
-className="text-gray-700">{act.descripcion}</p>
-<p className="text-sm text-gray-500 mt-1">
-Tipo: {act.tipo.toUpperCase()}
-</p>
-{/* ️ Imagen (URL externa) */}
-{act.imagen && (
-<img
-src={act.imagen}
-alt={act.titulo}
+  const [loading, setLoading] =
+    useState<boolean>(false);
 
-className="rounded mt-2 w-full
-max-w-md object-cover"
-/>
-)}
-</div>
-))}
-</div>
-)}
-</div>
-);
+  // LOGIN
+  const handleLogin = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+
+    e.preventDefault();
+
+    setLoading(true);
+    setMessage(null);
+
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    // ERROR
+    if (error) {
+      setMessage(
+        "❌ Error al iniciar sesión: " +
+        error.message
+      );
+      setLoading(false);
+      return;
+    }
+
+    // LOGIN EXITOSO
+    if (data.user) {
+
+      setMessage(
+        "✅ Bienvenido, sesión iniciada correctamente."
+      );
+
+      setTimeout(() => {
+        window.location.href = "/user";
+      }, 1500);
+
+    } else {
+
+      setMessage(
+        "⚠️ No se encontró el usuario."
+      );
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4">
+
+      {/* CARD */}
+      <div className="w-full max-w-md bg-white text-black rounded-[32px] shadow-2xl p-10">
+
+        {/* LOGO */}
+        <div className="flex justify-center mb-5">
+          <div className="bg-[#E60023] w-16 h-16 rounded-full flex items-center justify-center shadow-md">
+            <span className="text-white text-3xl font-bold">
+              P
+            </span>
+          </div>
+        </div>
+
+        {/* TITULO */}
+        <h1 className="text-4xl font-bold text-center text-black mb-8">
+          Bienvenido a Pinterest
+        </h1>
+
+        {/* FORM */}
+        <form
+          onSubmit={handleLogin}
+          className="flex flex-col gap-4"
+        >
+
+          {/* EMAIL */}
+          <input
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
+            required
+            style={{ color: "black" }}
+            className="border border-gray-300 rounded-2xl px-5 py-4 bg-white text-black placeholder:text-gray-500 outline-none focus:border-gray-500"
+          />
+
+          {/* PASSWORD */}
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            required
+            style={{ color: "black" }}
+            className="border border-gray-300 rounded-2xl px-5 py-4 bg-white text-black placeholder:text-gray-500 outline-none focus:border-gray-500"
+          />
+
+          {/* BOTON */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-[#E60023] hover:bg-red-700 text-white py-4 rounded-full font-bold transition"
+          >
+            {loading
+              ? "Cargando..."
+              : "Iniciar sesión"}
+          </button>
+
+        </form>
+
+        {/* MENSAJE */}
+        {message && (
+          <p className="mt-5 text-center text-sm text-black">
+            {message}
+          </p>
+        )}
+
+        {/* REGISTER */}
+        <p className="text-center text-gray-600 mt-6 text-sm">
+          ¿No tienes cuenta?{" "}
+          <Link
+            href="/register"
+            className="font-bold text-black hover:underline"
+          >
+            Regístrate
+          </Link>
+        </p>
+
+      </div>
+    </div>
+  );
 }

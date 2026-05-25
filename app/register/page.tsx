@@ -1,117 +1,191 @@
 "use client";
-// 👆 Este componente se ejecuta del lado del cliente (navegador)
+
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-// 👆 Importamos React y el cliente de Supabase que configuramos en
-/lib
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseCliente";
+
 export default function RegisterPage() {
-// 📦 Estados tipados con TypeScript
-const [nombre, setNombre] = useState<string>("");
-const [email, setEmail] = useState<string>("");
-const [telefono, setTelefono] = useState<string>("");
-const [password, setPassword] = useState<string>("");
-const [message, setMessage] = useState<string | null>(null);
-// ⚙️ Esta función maneja el registro del usuario
-const handleRegister = async (e: React.FormEvent<HTMLFormElement>) =>
-{
-e.preventDefault(); // 👈 Evita que el formulario recargue la
-página
-// 🚀 1️⃣Registrar al usuario en el sistema de autenticación de
-Supabase
-const { data: authData, error: authError } = await
-supabase.auth.signUp({
-email,
-password,
-});
-// 🧩 Si hay error en la autenticación, detenemos el proceso
-if (authError) {
-setMessage("❌ Error en registro: " + authError.message);
-return;
-}
-// ⚠️ Verificamos si Supabase devolvió un ID de usuario
-const userId = authData.user?.id;
-if (!userId) {
-setMessage("⚠️ No se pudo obtener el ID del usuario.");
 
-return;
-}
-// 📘 2️⃣Insertar los datos del estudiante en la tabla 'estudiantes'
-const { error: insertError } = await supabase
-.from("estudiantes")
-.insert([
-{
-id: userId, // 🧩 Usamos el mismo ID del sistema de
-autenticación
-nombre,
-correo: email,
-telefono,
-},
-]);
-// 🧩 Si hay error al insertar en la tabla
-if (insertError) {
-setMessage("⚠️ Usuario autenticado pero no guardado en la tabla:
-" + insertError.message);
-return;
-}
-// ✅ Si todo sale bien:
-setMessage("✅ Usuario registrado y guardado correctamente. Revisa
-tu correo para confirmar.");
-};
-return (
-<div className="max-w-sm mx-auto mt-10 p-6 border rounded-lg
-shadow">
-<h1 className="text-xl font-bold mb-4 text-center">Registro de
-estudiante</h1>
-{/* 📋 Al enviar el formulario se ejecuta handleRegister */}
-<form onSubmit={handleRegister} className="flex flex-col gap-4">
-{/* Campo para el nombre */}
-<input
-type="text"
-placeholder="Nombre completo"
-value={nombre}
+  // ESTADOS
+  const [nombre, setNombre] =
+    useState("");
 
-onChange={(e) => setNombre(e.target.value)} // 🔄 Actualiza
-el estado
-required
-className="border p-2 rounded"
-/>
-{/* Campo para el correo */}
-<input
-type="email"
-placeholder="Correo electrónico"
-value={email}
-onChange={(e) => setEmail(e.target.value)} // 🔄 Actualiza el
-estado
-required
-className="border p-2 rounded"
-/>
-{/* Campo para el teléfono */}
-<input
-type="tel"
-placeholder="Teléfono"
-value={telefono}
-onChange={(e) => setTelefono(e.target.value)} // 🔄 Actualiza
-el estado
-className="border p-2 rounded"
-/>
-{/* Campo para la contraseña */}
-<input
-type="password"
-placeholder="Contraseña"
-value={password}
-onChange={(e) => setPassword(e.target.value)} // 🔄 Actualiza
-el estado
-required
-className="border p-2 rounded"
-/>
-<button type="submit" className="bg-blue-600 text-white p-2
-rounded">
-Registrarse
-</button>
-</form>
+  const [telefono, setTelefono] =
+    useState("");
 
-{/* 💬 Mostramos el mensaje de éxito o error */}
-{message && <p className="mt-4 text-center">{message}</p>}
-</div>
-);
+  const [email, setEmail] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [message, setMessage] =
+    useState<string | null>(null);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  // REGISTER
+  const handleRegister = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+
+    e.preventDefault();
+
+    setLoading(true);
+    setMessage(null);
+
+    const { data, error } =
+      await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            nombre,
+            telefono,
+          },
+        },
+      });
+
+    if (error) {
+      setMessage(
+        "❌ Error: " + error.message
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (data.user) {
+      setMessage(
+        "✅ Cuenta creada correctamente"
+      );
+
+      setNombre("");
+      setTelefono("");
+      setEmail("");
+      setPassword("");
+
+      setTimeout(() => {
+        window.location.href =
+          "/login";
+      }, 2000);
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4">
+
+      {/* CARD */}
+      <div className="w-full max-w-md bg-white rounded-[32px] shadow-2xl p-10">
+
+        {/* LOGO */}
+        <div className="flex justify-center mb-5">
+          <div className="bg-[#E60023] w-16 h-16 rounded-full flex items-center justify-center shadow-md">
+            <span className="text-white text-3xl font-bold">
+              P
+            </span>
+          </div>
+        </div>
+
+        {/* TITULO */}
+        <h1 className="text-4xl font-bold text-black text-center mb-8">
+          Bienvenido a Pinterest
+        </h1>
+
+        {/* FORM */}
+        <form
+          onSubmit={handleRegister}
+          className="flex flex-col gap-4"
+        >
+
+          {/* NOMBRE */}
+          <input
+            type="text"
+            placeholder="Nombre completo"
+            value={nombre}
+            onChange={(e) =>
+              setNombre(
+                e.target.value
+              )
+            }
+            required
+            className="border border-gray-300 rounded-2xl px-5 py-4 text-black placeholder:text-gray-500 outline-none focus:border-gray-500"
+          />
+
+          {/* EMAIL */}
+          <input
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) =>
+              setEmail(
+                e.target.value
+              )
+            }
+            required
+            className="border border-gray-300 rounded-2xl px-5 py-4 text-black placeholder:text-gray-500 outline-none focus:border-gray-500"
+          />
+
+          {/* TELEFONO */}
+          <input
+            type="text"
+            placeholder="Teléfono"
+            value={telefono}
+            onChange={(e) =>
+              setTelefono(
+                e.target.value
+              )
+            }
+            className="border border-gray-300 rounded-2xl px-5 py-4 text-black placeholder:text-gray-500 outline-none focus:border-gray-500"
+          />
+
+          {/* PASSWORD */}
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            required
+            className="border border-gray-300 rounded-2xl px-5 py-4 text-black placeholder:text-gray-500 outline-none focus:border-gray-500"
+          />
+
+          {/* BOTON */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-[#E60023] hover:bg-red-700 text-white py-4 rounded-full font-bold transition"
+          >
+            {loading
+              ? "Cargando..."
+              : "Registrarse"}
+          </button>
+        </form>
+
+        {/* MENSAJES */}
+        {message && (
+          <p className="mt-5 text-center text-black text-sm">
+            {message}
+          </p>
+        )}
+
+        {/* LOGIN */}
+        <p className="text-center text-gray-600 mt-6 text-sm">
+          ¿Ya tienes cuenta?{" "}
+          <Link
+            href="/login"
+            className="font-bold text-black hover:underline"
+          >
+            Inicia sesión
+          </Link>
+        </p>
+
+      </div>
+    </div>
+  );
 }
